@@ -4,35 +4,34 @@ import subprocess
 import re
 import itertools
 
-path = 'http://northcarolina.arrests.org'
+path = 'http://mugshots.wbtv.com/records/'
 
 g = Grab()
 
 first_names=[]
 last_names=[]
-records=[]
-g.go(path + '/?page=1&results=1000')
-for elem in g.doc.select('//ul/li/div/div[@class="title"]/a'):
-	#print elem
-        #print '%s %s' % (elem.text(), elem.attr('href'))
-	names = re.findall('[A-Z][^A-Z]*', elem.text())
-	#print '%s %s' % (names[0], names[1])
-	if len(names) == 2:
-		first_names.append(names[0].split(' ')[0])
-		last_names.append(names[1].split(' ')[0])
-		records.append(elem.attr('href'))
-
+dates=[]
 imgs=[]
-for href in records:
-	g.go(path + href)
-	for elem in g.doc.select('//div/div[@class="picture"]/a/img'):
-		mug = elem.attr('src')
-		img = mug.split('/')[-1]
-		#print '%s %s' % (mug, img)
-		server=subprocess.Popen(["wget", '--quiet', path + mug], cwd='data')
-		imgs.append(img)
+#&searchDOB=10/14/1988&
+g.go(path + sys.argv[1])
+query1 = g.doc.select('//div[@id="perps"]/div[@class="perp"]/div[@class="image"]/a/img')
+query2 = g.doc.select('//div[@id="perps"]/div[@class="perp"]/div[@class="arrest_date"]/b')
+query3 = g.doc.select('//div[@id="perps"]/div[@class="perp"]/div[@class="name"]')
+for img,date,name in itertools.izip(query1, query2, query3):
+	dates.append(date.text())
+	fields = name.text().split(',')
+	last_name = fields[0]
+	first_name = fields[1].split(' ')[1]
+	last_names.append(last_name)
+	first_names.append(first_name)
+	url = img.attr('src')
+	fields = date.text().split('/')
+	img_name = first_name + '_' + last_name + '_' + fields[0] + '_' + fields[1] + '_' + fields[2] + '.jpg'
+	imgs.append(img_name)
+	server=subprocess.Popen(["wget", '--quiet', '-O', img_name, url ], cwd='data')
+	#print '%s %s %s %s' % (fields[1].split(' ')[1], fields[0], date.text(), img.attr('src'))
 
-output_file = open('arrests.txt','w')
+output_file = open(sys.argv[2],'w')
 #We have the name and image, now lets get the conviction status
 for f,l,i, in itertools.izip(first_names,last_names,imgs):
 	lookup = 'http://webapps6.doc.state.nc.us/opi/offendersearch.do?method=list&searchLastName=' + l + '&searchFirstName=' + f
@@ -54,4 +53,3 @@ for f,l,i, in itertools.izip(first_names,last_names,imgs):
 	output_file.write("%s,%s,%s,%d\n" % (f,l,i,status))
 
 output_file.close()
-server.wait()
