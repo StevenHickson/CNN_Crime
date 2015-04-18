@@ -11,15 +11,16 @@ g = Grab()
 first_names=[]
 last_names=[]
 records=[]
-g.go(path + '/?page=1&results=100000')
+g.go(path + '/?page=1&results=1000')
 for elem in g.doc.select('//ul/li/div/div[@class="title"]/a'):
 	#print elem
         #print '%s %s' % (elem.text(), elem.attr('href'))
 	names = re.findall('[A-Z][^A-Z]*', elem.text())
 	#print '%s %s' % (names[0], names[1])
-	first_names.append(names[0])
-	last_names.append(names[1])
-	records.append(elem.attr('href'))
+	if len(names) == 2:
+		first_names.append(names[0].split(' ')[0])
+		last_names.append(names[1].split(' ')[0])
+		records.append(elem.attr('href'))
 
 imgs=[]
 for href in records:
@@ -36,6 +37,7 @@ output_file = open('arrests.txt','w')
 for f,l,i, in itertools.izip(first_names,last_names,imgs):
 	lookup = 'http://webapps6.doc.state.nc.us/opi/offendersearch.do?method=list&searchLastName=' + l + '&searchFirstName=' + f
 	#print lookup
+	print '%s %s' % (f, l)
 	g.go(lookup)
 	if g.doc.text_search(u'Nothing found'):
 		status=0
