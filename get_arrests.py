@@ -6,7 +6,12 @@ import itertools
 
 path = 'http://mugshots.wbtv.com/records/'
 
-g = Grab()
+while True:
+	try:
+		g = Grab()
+	except:
+		continue
+	break
 
 first_names=[]
 last_names=[]
