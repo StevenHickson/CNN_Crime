@@ -20,15 +20,15 @@ imgs=[]
 results=[]
 #&searchDOB=10/14/1988&
 g.go(sys.argv[1] + "?page=" + sys.argv[2])
-for elem in g.doc.select('//div/table/tbody/tr/td/a'):
-	print elem
+for elem in g.doc.select('//tr/td/a'):
+	print elem.attr('href')
 	results.append(elem.attr('href'))
 
 for a in results:
 	g.go(a)
 	i = 0
 	tmp = g.doc.select('//h1[@id="item-title"]/span[@itemprop="name"]')
-	fields = tmp.split(' ')
+	fields = tmp[0].text().split(' ')
 	first_name = fields[0]
 	last_name = fields[-1]
 	for elem in g.doc.select('//div[@class="fieldvalues"]/div[@class="field"]/span[@class="value"]'):
@@ -43,7 +43,8 @@ for a in results:
 	dates.append(date)
 	last_names.append(last_name)
 	first_names.append(first_name)
-	fields = date.text().split('/')
+	print date
+	fields = date.split('/')
 	
 	img=""
 	i = 0
@@ -52,7 +53,7 @@ for a in results:
 		if i > 0:
 			img+=','
 		img+=img_name
-		server=subprocess.Popen(["wget", '--quiet', '-O', img_name, url ], cwd='data')
+		server=subprocess.Popen(["wget", '--quiet', '-O', img_name, elem.attr('src') ], cwd='data')
 		#print '%s %s %s %s' % (fields[1].split(' ')[1], fields[0], date.text(), img.attr('src'))
 	imgs.append(img)
 
