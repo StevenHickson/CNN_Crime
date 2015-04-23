@@ -1,7 +1,20 @@
 import sys
 import subprocess
+from grab import Grab
 
-for i in range(int(sys.argv[1]),int(sys.argv[2])):
-	fout = 'arrests.' + str(i)
-	server=subprocess.Popen(["python", "get_arrests.py", "http://mugshots.com/US-Counties/North-Carolina/Alamance-County-NC/", str(i), fout], cwd='./')
+g = Grab()
+
+path = "http://mugshots.com"
+g.go(path + "/US-Counties/North-Carolina/")
+
+for elem in g.doc.select('//div/ul[@class="categories"]/li/a'):
+	print path + elem.attr('href')
+	for i in range(1,85):
+		fout = 'arrests.' + str(i)
+		server=subprocess.Popen(["python", "get_arrests.py", path + elem.attr('href'), str(i), fout], cwd='./')
+		server.wait()
+
+	server=subprocess.Popen(["cat", "arrests.*", ">>", "tmp.txt"], cwd='./')
+	server.wait()
+	server=subprocess.Popen(["rm", "arrests.*"], cwd='./')
 	server.wait()
