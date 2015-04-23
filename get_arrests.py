@@ -4,14 +4,7 @@ import subprocess
 import re
 import itertools
 
-path = 'http://mugshots.com/US-Counties/North-Carolina/Alamance-County-NC/?page='
-
-while True:
-	try:
-		g = Grab()
-	except:
-		continue
-	break
+g = Grab()
 
 first_names=[]
 last_names=[]
@@ -53,11 +46,11 @@ for a in results:
 			have_name = 1
 			grab = 0
 
-		if elem.text() == "Gender":
+		if elem.text() == "Gender" or elem.text() == "Sex":
 			grab = 2
 		elif elem.text() == "Race":
 			grab = 1
-		elif elem.text().split(' ')[0] == "Birth":
+		elif elem.text().split(' ')[0] == "Birth" or elem.text() == "DOB":
 			grab = 3
 		elif elem.text() == "Name" and have_name == 0:
 			grab = 4
@@ -80,7 +73,7 @@ for a in results:
 output_file = open(sys.argv[3],'w')
 #We have the name and image, now lets get the conviction status
 for f,l,d,s,r,i, in itertools.izip(first_names,last_names,dates,genders,races,imgs):
-	lookup = 'http://webapps6.doc.state.nc.us/opi/offendersearch.do?method=list&searchLastName=' + l + '&searchFirstName=' + f + '&searchDOB=' + d
+	lookup = 'http://webapps6.doc.state.nc.us/opi/offendersearch.do?method=list&searchLastName=' + l + '&searchFirstName=' + f + '&searchDOB=' + d + '&searchDOBRange=0'
 	#print lookup
 	print '%s %s' % (f, l)
 	g.go(lookup)
