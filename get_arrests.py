@@ -4,7 +4,7 @@ import subprocess
 import re
 import itertools
 
-path = 'http://mugshots.wbtv.com/records/'
+path = 'http://mugshots.com/US-Counties/North-Carolina/Alamance-County-NC/?page='
 
 while True:
 	try:
@@ -17,29 +17,49 @@ first_names=[]
 last_names=[]
 dates=[]
 imgs=[]
+results=[]
 #&searchDOB=10/14/1988&
-g.go(path + sys.argv[1])
-query1 = g.doc.select('//div[@id="perps"]/div[@class="perp"]/div[@class="image"]/a/img')
-query2 = g.doc.select('//div[@id="perps"]/div[@class="perp"]/div[@class="arrest_date"]/b')
-query3 = g.doc.select('//div[@id="perps"]/div[@class="perp"]/div[@class="name"]')
-for img,date,name in itertools.izip(query1, query2, query3):
-	dates.append(date.text())
-	fields = name.text().split(',')
-	last_name = fields[0]
-	first_name = fields[1].split(' ')[1]
+g.go(sys.argv[1] + "?page=" + sys.argv[2])
+for elem in g.doc.select('//div/table/tbody/tr/td/a'):
+	print elem
+	results.append(elem.attr('href'))
+
+for a in results:
+	g.go(a)
+	i = 0
+	tmp = g.doc.select('//h1[@id="item-title"]/span[@itemprop="name"]')
+	fields = tmp.split(' ')
+	first_name = fields[0]
+	last_name = fields[-1]
+	for elem in g.doc.select('//div[@class="fieldvalues"]/div[@class="field"]/span[@class="value"]'):
+		if i == 1:
+			races = elem.text()
+		elif i == 2:
+			gender = elem.text()
+		elif i == 7:
+			date = elem.text()
+		i = i + 1
+
+	dates.append(date)
 	last_names.append(last_name)
 	first_names.append(first_name)
-	url = img.attr('src')
 	fields = date.text().split('/')
-	img_name = first_name + '_' + last_name + '_' + fields[0] + '_' + fields[1] + '_' + fields[2] + '.jpg'
-	imgs.append(img_name)
-	server=subprocess.Popen(["wget", '--quiet', '-O', img_name, url ], cwd='data')
-	#print '%s %s %s %s' % (fields[1].split(' ')[1], fields[0], date.text(), img.attr('src'))
+	
+	img=""
+	i = 0
+	for elem in g.doc.select('//div[@class="full-image-container"]/div[@class="full-image"]/img[@class="hidden-wide"]'):
+		img_name = first_name + '_' + last_name + '_' + fields[0] + '_' + fields[1] + '_' + fields[2] + '.jpg'
+		if i > 0:
+			img+=','
+		img+=img_name
+		server=subprocess.Popen(["wget", '--quiet', '-O', img_name, url ], cwd='data')
+		#print '%s %s %s %s' % (fields[1].split(' ')[1], fields[0], date.text(), img.attr('src'))
+	imgs.append(img)
 
-output_file = open(sys.argv[2],'w')
+output_file = open(sys.argv[3],'w')
 #We have the name and image, now lets get the conviction status
-for f,l,i, in itertools.izip(first_names,last_names,imgs):
-	lookup = 'http://webapps6.doc.state.nc.us/opi/offendersearch.do?method=list&searchLastName=' + l + '&searchFirstName=' + f
+for f,l,d,i, in itertools.izip(first_names,last_names,dates,imgs):
+	lookup = 'http://webapps6.doc.state.nc.us/opi/offendersearch.do?method=list&searchLastName=' + l + '&searchFirstName=' + f + '&searchDOB=' + d
 	#print lookup
 	print '%s %s' % (f, l)
 	g.go(lookup)
