@@ -26,12 +26,16 @@ for elem in g.doc.select('//tr/td/a'):
 	results.append(elem.attr('href'))
 
 for a in results:
+	have_name = 0
+	have_mugshot = 0
 	g.go(a)
 	grab = 0
 	tmp = g.doc.select('//h1[@id="item-title"]/span[@itemprop="name"]')
-	fields = tmp[0].text().split(' ')
-	first_name = fields[0]
-	last_name = fields[-1]
+	if len(tmp) > 0:
+		have_name = 1
+		fields = tmp[0].text().split(' ')
+		first_name = fields[0]
+		last_name = fields[-1]
 	for elem in g.doc.select('//div[@class="fieldvalues"]/div[@class="field"]/span'):
 		if grab == 1:
 			race = elem.text()
@@ -42,24 +46,36 @@ for a in results:
 		elif grab == 3:
 			date = elem.text()
 			grab = 0
+		elif grab == 4:
+			fields = elem.text().split(' ')
+			first_name = fields[0]
+			last_name = fields[-1]
+			have_name = 1
+			grab = 0
+
 		if elem.text() == "Gender":
 			grab = 2
 		elif elem.text() == "Race":
 			grab = 1
 		elif elem.text().split(' ')[0] == "Birth":
 			grab = 3
-	dates.append(date)
-	last_names.append(last_name)
-	first_names.append(first_name)
-	genders.append(gender)
-	races.append(race)
+		elif elem.text() == "Name" and have_name == 0:
+			grab = 4
 	fields = date.split('/')
 	
 	elem = g.doc.select('//div[@class="full-image-container"]/div[@class="full-image"]/img[@class="hidden-wide"]')
 	img_name = first_name + '_' + last_name + '_' + fields[0] + '_' + fields[1] + '_' + fields[2] + '.jpg'
-	server=subprocess.Popen(["wget", '--quiet', '-O', img_name, elem[0].attr('src') ], cwd='data')
-	#print '%s %s %s %s' % (fields[1].split(' ')[1], fields[0], date.text(), img.attr('src'))
-	imgs.append(img_name)
+	if len(elem) > 0:
+		server=subprocess.Popen(["wget", '--quiet', '-O', img_name, elem[0].attr('src') ], cwd='data')
+		have_mugshot = 1
+	if have_mugshot == 1 and have_name == 1:
+		print '%s %s %s %s %s %s' % (first_name, last_name, gender, race, date, img_name)
+		dates.append(date)
+		last_names.append(last_name)
+		first_names.append(first_name)
+		genders.append(gender)
+		races.append(race)
+		imgs.append(img_name)
 
 output_file = open(sys.argv[3],'w')
 #We have the name and image, now lets get the conviction status
