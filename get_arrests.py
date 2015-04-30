@@ -50,7 +50,7 @@ for a in results:
 			grab = 2
 		elif elem.text() == "Race":
 			grab = 1
-		elif elem.text().split(' ')[0] == "Birth" or elem.text() == "DOB":
+		elif elem.text().split(' ')[0] == "Birth" or elem.text() == "DOB" or elem.text() == "dob" or elem.text().split(' ')[0] == "birth":
 			grab = 3
 		elif elem.text() == "Name" and have_name == 0:
 			grab = 4
