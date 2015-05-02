@@ -29,7 +29,7 @@ def vis_square(data, fileName, padsize=1, padval=0):
 # Set the right path to your model definition file, pretrained model weights,
 # and the image you would like to classify.
 MODEL_FILE = './deploy.prototxt'
-PRETRAINED = './models/_iter_80000.caffemodel'
+PRETRAINED = './models/_iter_100000.caffemodel'
 
 #print dir(caffe)
 #print dir(caffe.io)

@@ -6,13 +6,15 @@ import os.path
 d = defaultdict(list)
 train_file = open(sys.argv[2],'w')
 test_file = open(sys.argv[3],'w')
+train_full_file = open(sys.argv[4],'w')
+test_full_file = open(sys.argv[5],'w')
 
 with open(sys.argv[1]) as f:
 	for line in f:
 		#parse line here
 		fields = line.split(',')
-		newString = fields[2] + ',' + fields[3].rstrip('\r\n')
-		d[int(fields[3])].append(newString)
+		newString = fields[5] + ',' + fields[7].rstrip('\r\n')
+		d[int(fields[7])].append(line)
 
 #Lets parse out keys with a small list and split the rest 80/20
 for k,v in d.items():
@@ -28,14 +30,11 @@ for k,v in d.items():
 		#lets output the filenames to test and train
 		for item in train_data:
 			fields = item.split(',')
-			full = '/home/steve/inmates/data/' + fields[0]
-			if os.path.isfile(full):
-				train_file.write("%s %d\n" % (full, int(fields[1])))
+			train_file.write("%s %d\n" % (fields[5], int(fields[7])))
+			train_full_file.write("%s" % (item))
 		for item in test_data:
 			fields = item.split(',')
-			full = '/home/steve/inmates/data/' + fields[0]
-			if os.path.isfile(full):
-				test_file.write("%s %d\n" % (full, int(fields[1])))
-
+			test_file.write("%s %d\n" % (fields[5], int(fields[7])))
+			test_full_file.write("%s" % (item))
 train_file.close()
 test_file.close()

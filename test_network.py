@@ -13,14 +13,14 @@ import caffe
 # Set the right path to your model definition file, pretrained model weights,
 # and the image you would like to classify.
 MODEL_FILE = './deploy.prototxt'
-PRETRAINED = './models/_iter_80000.caffemodel'
+PRETRAINED = './models/_iter_100000.caffemodel'
 #IMAGE_FILE = '/home/steve/EdisonData/data/dYOSze18voxUwc5292z62i9eM2DfNiFH.jpg'
 TEST_FILE = sys.argv[1]
 
 net = caffe.Classifier(MODEL_FILE, PRETRAINED)
-net.set_raw_scale('data',255)
-net.set_channel_swap('data',(2,1,0))
-net.set_mean('data',np.load(caffe_root+'python/caffe/imagenet/ilsvrc_2012_mean.npy'))
+net.transformer.set_raw_scale('data',255)
+net.transformer.set_channel_swap('data',(2,1,0))
+net.transformer.set_mean('data',np.load(caffe_root+'python/caffe/imagenet/ilsvrc_2012_mean.npy').mean(1).mean(1))
 #net.set_phase_test()
 caffe.set_mode_gpu()
 

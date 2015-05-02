@@ -15,7 +15,7 @@ S = 2000; % size of full embedding image
 G = zeros(S, S, 3, 'uint8');
 s = 50; % size of every single image
 
-Ntake = 3335;
+Ntake = 5830;
 for i=1:Ntake
     
     if mod(i, 100)==0
